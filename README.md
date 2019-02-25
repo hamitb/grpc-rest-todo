@@ -1,1 +1,1 @@
-# grpc-todo
+# go-grpc-http-rest-microservice
