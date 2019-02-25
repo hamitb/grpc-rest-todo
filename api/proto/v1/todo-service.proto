@@ -31,8 +31,74 @@ message CreateResponse {
     int64 id = 2;
 }
 
+message ReadRequest {
+    // API versioning
+    string api = 1;
+    // Unique integer id of the task
+    int64 id = 2;
+}
+
+message ReadResponse {
+    // API Versioning
+    string api = 1;
+    // Returned todo
+    Todo todo = 2;
+}
+
+message UpdateRequest {
+    // API Versioning
+    string api = 1;
+    // Todo to update
+    Todo todo = 2;
+}
+
+message UpdateResponse {
+    // API Versioning
+    string api = 1;
+    // Number of entities updated
+    int64 updated = 2;
+}
+
+message DeleteRequest {
+    // API Versioning
+    string api = 1;
+    // Unique todo id
+    int64 id = 2;
+}
+
+message DeleteResponse {
+    // API Versioning
+    string api = 1;
+    // Number of entities deleted
+    int64 deleted = 2;
+}
+
+message ReadAllRequest {
+    // API versioning
+    string api = 1;
+} 
+
+message ReadAllResponse {
+    // API Versioning
+    string api = 1;
+    // List of all todos
+    repeated Todo todos = 2;
+}
+
 // Service to manage list of todo tasks
 service TodoService {
     // Create new todo
-    rpc Create(CreateRequest) returns (CreateResponse)
+    rpc Create(CreateRequest) returns (CreateResponse);
+
+    // Read todo
+    rpc Read(ReadRequest) returns (ReadResponse);
+
+    // Update todo
+    rpc Update(UpdateRequest) returns (UpdateResponse);
+
+    // Delete todo
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+
+    // Read all todos
+    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
 }
