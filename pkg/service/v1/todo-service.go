@@ -66,14 +66,16 @@ func (s *todoServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (
 	}
 
 	// insert Todo entity data
-	res, err := c.ExecContext(ctx, "INSERT INTO todo(title, description, reminder) VALUES(?, ?, ?)",
+	res, err := c.QueryContext(ctx, "INSERT INTO todo(title, description, reminder) VALUES($1, $2, $3) RETURNING id",
 		req.Todo.Title, req.Todo.Description, reminder)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to insert into Todo-> '%s'", err.Error())
 	}
+	res.Next()
 
 	// get ID of creates Todo
-	id, err := res.LastInsertId()
+	var id int64
+	err = res.Scan(&id)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to retrieve id for created Todo-> '%s'", err.Error())
 	}
@@ -98,7 +100,7 @@ func (s *todoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.
 	defer c.Close()
 
 	// read Todo entity
-	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo WHERE id=?", req.Id)
+	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo WHERE id=$1", req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +152,7 @@ func (s *todoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	}
 
 	// update Todo
-	res, err := c.ExecContext(ctx, "UPDATE todo SET title=?, description=?, reminder=? WHERE id=?",
+	res, err := c.ExecContext(ctx, "UPDATE todo SET title=$1, description=$2, reminder=? WHERE id=$3",
 		req.Todo.Title, req.Todo.Description, reminder, req.Todo.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to update Todo-> '%s'", err.Error())
@@ -185,7 +187,7 @@ func (s *todoServiceServer) Delete(ctx context.Context, req *v1.DeleteRequest) (
 	defer c.Close()
 
 	// delete Todo
-	res, err := c.ExecContext(ctx, "DELETE FROM todo WHERE id=?", req.Id)
+	res, err := c.ExecContext(ctx, "DELETE FROM todo WHERE id=$1", req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to delete Todo with ID='%d'-> %s", req.Id, err.Error())
 	}
