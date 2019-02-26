@@ -98,7 +98,7 @@ func (s *todoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.
 	defer c.Close()
 
 	// read Todo entity
-	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo")
+	rows, err := c.QueryContext(ctx, "SELECT id, title, description, reminder FROM todo WHERE id=?", req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s *todoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.
 
 	var td v1.Todo
 	var reminder time.Time
-	if err := rows.Scan(&td.Id, &td.Title, &td.Description, reminder); err != nil {
+	if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to retrieve field values from Todo row-> '%s'", err.Error())
 	}
 	td.Reminder, err = ptypes.TimestampProto(reminder)
@@ -229,7 +229,7 @@ func (s *todoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 	list := []*v1.Todo{}
 	for rows.Next() {
 		td := &v1.Todo{}
-		if err := rows.Scan(&td.Id, &td.Title, &td.Description, reminder); err != nil {
+		if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
 			return nil, status.Errorf(codes.Unknown, "failed to retrieve field values from Todo row-> '%s'", err.Error())
 		}
 		td.Reminder, err = ptypes.TimestampProto(reminder)
