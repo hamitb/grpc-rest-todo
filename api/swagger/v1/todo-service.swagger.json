@@ -52,6 +52,38 @@
         ]
       }
     },
+    "/v1/todo/all": {
+      "get": {
+        "summary": "Read all todos",
+        "operationId": "ReadAll",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReadAllResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist",
+            "schema": {
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "api",
+            "description": "API versioning.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TodoService"
+        ]
+      }
+    },
     "/v1/todo/{id}": {
       "get": {
         "summary": "Read todo",

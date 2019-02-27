@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/hamitb/go-grpc-http-rest-microservice/pkg/protocol/rest"
 	"context"
 	"database/sql"
 	"flag"
@@ -18,11 +19,15 @@ type Config struct {
 	// GRPCPort is TCP port to listen by gRPC server
 	GRPCPort string
 
+	// HTTP/REST gateway start parameters section
+	// HTTPPort is TCP port to listen by HTTP/REST gateway
+	HTTPPort string
+
 	// DB Datastore parameters section
 	// DatastoreDBHost is host of database
 	DatastoreDBHost string
 	// DatastoreDBUser is port to connect to database
-	DatastoreDBPort int
+	DatastoreDBPort string
 	// DatastoreDBUser is username to connect to database
 	DatastoreDBUser string
 	//DatastoreDBPassword password to connect to database
@@ -38,8 +43,9 @@ func RunServer() error {
 	// get configuration
 	var cfg Config
 	flag.StringVar(&cfg.GRPCPort, "grpc-port", "", "gRPC port to bind")
+	flag.StringVar(&cfg.HTTPPort, "http-port", "", "HTTP port to bind")
 	flag.StringVar(&cfg.DatastoreDBHost, "db-host", "", "Database host")
-	flag.IntVar(&cfg.DatastoreDBPort, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.DatastoreDBPort, "db-port", "", "Database port")
 	flag.StringVar(&cfg.DatastoreDBUser, "db-user", "", "Database user")
 	flag.StringVar(&cfg.DatastoreDBPassword, "db-password", "no-pass", "Database password")
 	flag.StringVar(&cfg.DatastoreDBName, "db-name", "", "Database name")
@@ -49,7 +55,11 @@ func RunServer() error {
 		return fmt.Errorf("invalid TCP port for gRPC server: '%s'", cfg.GRPCPort)
 	}
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
+	if len(cfg.HTTPPort) == 0 {
+		return fmt.Errorf("invalid TCP port for HTTP gateway: '%s'", cfg.HTTPPort)
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		cfg.DatastoreDBHost,
 		cfg.DatastoreDBPort,
@@ -64,6 +74,11 @@ func RunServer() error {
 	defer db.Close()
 
 	v1API := v1.NewTodoServiceServer(db)
+
+	// run HTTP gateway
+	go func() {
+		_ = rest.RunServer(ctx, cfg.GRPCPort, cfg.HTTPPort)
+	}()
 
 	return grpc.RunServer(ctx, v1API, cfg.GRPCPort)
 }

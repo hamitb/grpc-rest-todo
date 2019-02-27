@@ -167,7 +167,7 @@ func (s *todoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	if rows == 0 {
 		return nil, status.Errorf(codes.NotFound, "Todo with ID='%d' is not found", req.Todo.Id)
 	}
-
+	
 	return &v1.UpdateResponse{
 		Api:     apiVersion,
 		Updated: rows,

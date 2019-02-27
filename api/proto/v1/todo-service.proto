@@ -115,6 +115,13 @@ message ReadAllResponse {
 
 // Service to manage list of todo tasks
 service TodoService {
+    // Read all todos
+    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse){
+        option (google.api.http) = {
+            get: "/v1/todo/all"
+        };
+    };
+    
     // Create new todo
     rpc Create(CreateRequest) returns (CreateResponse){
         option (google.api.http) = {
@@ -149,7 +156,4 @@ service TodoService {
             delete: "/v1/todo/{id}"
         };
     };
-
-    // Read all todos
-    rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
 }
