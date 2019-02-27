@@ -71,8 +71,9 @@ func (s *todoServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to insert into Todo-> '%s'", err.Error())
 	}
+	defer res.Close()
+	
 	res.Next()
-
 	// get ID of creates Todo
 	var id int64
 	err = res.Scan(&id)
@@ -152,7 +153,7 @@ func (s *todoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 	}
 
 	// update Todo
-	res, err := c.ExecContext(ctx, "UPDATE todo SET title=$1, description=$2, reminder=? WHERE id=$3",
+	res, err := c.ExecContext(ctx, "UPDATE todo SET title=$1, description=$2, reminder=$3 WHERE id=$4",
 		req.Todo.Title, req.Todo.Description, reminder, req.Todo.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to update Todo-> '%s'", err.Error())
