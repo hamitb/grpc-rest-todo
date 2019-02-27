@@ -2,6 +2,34 @@ syntax = "proto3";
 package v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Todo service";
+        version: "1.0";
+        contact: {
+            name: "go-grpc-http-rest-microservice project";
+            url: "https://github.com/hamitb/go-grpc-http-rest-microservice";
+            email: "hamitburakemre@gmail.com";
+        };
+    };
+    schemes: HTTP;
+    consumes: "application/json";
+    produces: "application/json";
+    responses: {
+        key: "404";
+        value: {
+            description: "Returned when the resource does not exist";
+            schema: {
+                json_schema: {
+                    type: STRING;
+                }
+            }
+        }
+    }
+};
 
 // Todo structure
 message Todo {
@@ -88,16 +116,39 @@ message ReadAllResponse {
 // Service to manage list of todo tasks
 service TodoService {
     // Create new todo
-    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Create(CreateRequest) returns (CreateResponse){
+        option (google.api.http) = {
+            post: "/v1/todo"
+            body: "*"
+        };
+    };
 
     // Read todo
-    rpc Read(ReadRequest) returns (ReadResponse);
+    rpc Read(ReadRequest) returns (ReadResponse){
+        option (google.api.http) = {
+            get: "/v1/todo/{id}"
+        };
+    };
 
     // Update todo
-    rpc Update(UpdateRequest) returns (UpdateResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse){
+        option (google.api.http) = {
+            put: "/v1/todo/{todo.id}"
+            body: "*"
+
+            additional_bindings {
+                patch: "/v1/todo/{todo.id}"
+                body: "*"
+            }
+        };
+    };
 
     // Delete todo
-    rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse){
+        option (google.api.http) = {
+            delete: "/v1/todo/{id}"
+        };
+    };
 
     // Read all todos
     rpc ReadAll(ReadAllRequest) returns (ReadAllResponse);
